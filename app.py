@@ -7,11 +7,16 @@ app = Flask(__name__)
 
 @app.route('/process', methods=['POST'])
 def process_image():
-    try:
-        data = request.json
-        image_data = data['image']
+    data = request.json
+    
+    # Überprüfe, ob 'image' im request vorhanden ist
+    if 'image' not in data:
+        return jsonify({"error": "Missing 'image' field in the request"}), 400
 
-        # Padding hinzufügen, falls nötig
+    try:
+        image_data = data['image']
+        
+        # Überprüfe die Base64-Daten
         missing_padding = len(image_data) % 4
         if missing_padding:
             image_data += '=' * (4 - missing_padding)
