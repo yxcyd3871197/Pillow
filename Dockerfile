@@ -4,13 +4,15 @@ FROM python:3.9-slim
 # Arbeitsverzeichnis festlegen
 WORKDIR /app
 
-# Abhängigkeiten kopieren und installieren
-COPY requirements.txt .
+# Abhängigkeiten installieren
+COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# App-Code kopieren
-COPY app.py .
+# Anwendung kopieren
+COPY app.py app.py
 
-# Standard-Port und Startbefehl setzen
+# Exponiere den Port
 EXPOSE 8080
-CMD ["python3", "app.py"]
+
+# Startbefehl
+CMD ["python", "app.py"]
