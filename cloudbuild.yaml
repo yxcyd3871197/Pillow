@@ -9,17 +9,21 @@ steps:
 
   # Schritt 3: Das Image in Google Cloud Run bereitstellen
   - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'gcloud' # WICHTIG: entrypoint hinzufügen
     args:
       - 'run'
       - 'deploy'
-      - 'pillow-http-service'
+      - 'pillow-http-service' # Name des Cloud Run Dienstes
       - '--image'
       - 'gcr.io/$PROJECT_ID/pillow-http'
       - '--region'
-      - 'us-central1'
+      - 'us-central1' # Deine Region
       - '--platform'
       - 'managed'
-      - '--allow-unauthenticated'
+      - '--allow-unauthenticated' # Nur für Tests! In der Produktion AUTH aktivieren!
+      - '--set-env-vars' # Umgebungsvariablen setzen
+      - 'PORT=8080' # Port für die Anwendung
+      - '--timeout=300s' # Timeout setzen (5 Minuten)
 
 images:
   - 'gcr.io/$PROJECT_ID/pillow-http'
