@@ -1,25 +1,31 @@
-# Basis-Image auswählen
+# Basis-Image auswählen (schlanke Version)
 FROM python:3.9-slim-buster
 
 # Arbeitsverzeichnis festlegen
 WORKDIR /app
 
-# Systemabhängigkeiten für Schriftarten installieren (wichtig!)
+# Systemabhängigkeiten für Schriftarten installieren (wichtig!) und unnötige Pakete entfernen
 RUN apt-get update && apt-get install -y --no-install-recommends \
     fontconfig \
     ttf-freefont \
+    libjpeg-dev \ # Für JPEG-Unterstützung in Pillow
+    zlib1g-dev \ # Für weitere Bildformate
     && rm -rf /var/lib/apt/lists/*
 
-# Abhängigkeiten installieren
-COPY requirements.txt requirements.txt
+# Pillow mit JPEG- und ZLIB-Unterstützung neu installieren
+RUN pip uninstall -y Pillow
+RUN CFLAGS="-I/usr/include" LDFLAGS="-L/usr/lib" pip install --no-cache-dir Pillow
+
+# Python-Abhängigkeiten installieren
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Anwendung und Schriftarten kopieren
 COPY app.py .
-COPY fonts/ .
+COPY fonts/ ./fonts
 
-# Exponiere den Port
+# Port freigeben
 EXPOSE 8080
 
-# Gunicorn verwenden (für die Produktion empfohlen)
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]
+# Gunicorn konfigurieren (wichtig für Cloud Run)
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app
